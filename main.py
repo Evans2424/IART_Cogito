@@ -1,12 +1,9 @@
 from game import Game
+from constants import WIDTH, HEIGHT, FPS
 import pygame
 
 # Initialize Pygame
 pygame.init()
-
-# Set up some constants
-WIDTH, HEIGHT = 640, 480
-FPS = 60
 
 # Set up the display
 screen = pygame.display.set_mode((WIDTH, HEIGHT))

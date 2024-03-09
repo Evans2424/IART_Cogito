@@ -1,3 +1,4 @@
+# TODO: define goal matrices for each level - their are currently all the same
 
 goalMatrices = [
     [[0, 0, 0, 0, 0, 0, 0, 0, 0],    # 1
