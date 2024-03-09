@@ -41,7 +41,7 @@ class GameState:
         return goal_states.getGoalMatrix(level)
     
     def move(self, button):
-        """ Move the board according to the button """
+        """ Board will shift shRow units in the row of teh button + delta and shCol units in the column of the button + delta. """
         shRow, shCol, delta = button.getMove(self.level)
         newBoard = self.board.shiftRow(button.index + delta, shRow).shiftColumn(button.index + delta, shCol)
         return GameState(newBoard, self.level, self.score + 1)
@@ -50,7 +50,7 @@ class GameState:
     def initializeRandomState(level, buttons):
         goalState = GameState(Board(goal_states.getGoalMatrix(level)), level, 0)
         # random moves
-        randMoves = random.randint(20, 100)
+        randMoves = random.randint(50, 100)
         for _ in range(randMoves):
             button = random.choice(buttons)
             goalState = goalState.move(button)
@@ -65,16 +65,14 @@ class Game:
         self.buttons = [Button(i,j) for j in range(9) for i in range(4)]
         self.state = GameState.initializeRandomState(1, self.buttons)
 
-    def update(self):
-        for event in pygame.event.get():
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                x, y = pygame.mouse.get_pos()
-                for button in self.buttons:
-                    if button.isClicked(x, y):
-                        # Board will shift shRow units in the row of teh button + delta and shCol units in the column of the button + delta.
-                        self.state = self.state.move(button)
-                        if self.state.isGoalState():
-                            self.state = GameState.initializeRandomState(self.state.level + 1, self.buttons)
+    def checkButtons(self, x, y):
+        for button in self.buttons:
+            if button.isClicked(x, y):
+                print(f"You clicked me! {button}")
+                self.state = self.state.move(button)
+                if self.state.isGoalState():
+                    print("Goal state reached")
+                    self.state = GameState.initializeRandomState(self.state.level + 1, self.buttons)
 
     def draw(self):
         # Fill the screen with a color

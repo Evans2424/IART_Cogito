@@ -35,8 +35,7 @@ class Button:
 
     def isClicked(self, x, y):
         """ Return True if the button is clicked """
-        print(f"You clicked me! {self}")
-        return self.position[0] <= x <= self.position[0] + cellSize and self.position[1] <= y <= self.position[1] + cellSize
+        return self.position[0] - cellSize/2 <= x <= self.position[0] + cellSize/2 and self.position[1] - cellSize/2 <= y <= self.position[1] + cellSize/2
 
     def getMove(self, level):
         """ Return the shiftRow, shiftColumn and delta for the move associated with the button """

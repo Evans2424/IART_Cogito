@@ -1,4 +1,4 @@
-from game import Game
+from game import Game, GameState
 from constants import WIDTH, HEIGHT, FPS
 import pygame
 
@@ -18,9 +18,9 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-
-    # Update game state here
-    game.update()
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            x, y = pygame.mouse.get_pos()
+            game.checkButtons(x, y)
 
     # Draw everything
     game.draw()
