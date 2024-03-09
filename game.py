@@ -3,6 +3,7 @@ from button import Button
 from constants import MARGIN, cellSize
 import pygame
 import goal_states
+import random
 
 
 class GameState:
@@ -24,6 +25,9 @@ class GameState:
         self.level = level
         self.score = score
 
+    def __str__(self):
+        return f"Level={self.level}, Score={self.score}, \nBoard=\n{self.board}"
+
     def piecesCorrectlyPositioned(self):
         """ Return the number of pieces that are in the correct position """
         return sum(self.board.matrix[i][j] and goal_states.getGoalMatrix(self.level)[i][j] for i in range(9) for j in range(9))
@@ -35,14 +39,31 @@ class GameState:
     @staticmethod
     def getGoalMatrix(level):
         return goal_states.getGoalMatrix(level)
+    
+    def move(self, button):
+        """ Move the board according to the button """
+        shRow, shCol, delta = button.getMove(self.level)
+        newBoard = self.board.shiftRow(button.index + delta, shRow).shiftColumn(button.index + delta, shCol)
+        return GameState(newBoard, self.level, self.score + 1)
+    
+    @staticmethod
+    def initializeRandomState(level, buttons):
+        goalState = GameState(Board(goal_states.getGoalMatrix(level)), level, 0)
+        # random moves
+        randMoves = random.randint(20, 100)
+        for _ in range(randMoves):
+            button = random.choice(buttons)
+            goalState = goalState.move(button)
+
+        return GameState(goalState.board, level, 0)
 
 
 class Game:
 
     def __init__(self, screen):
         self.screen = screen
-        self.state = GameState(Board([[0 for _ in range(9)] for _ in range(9)]), 1, 0)
         self.buttons = [Button(i,j) for j in range(9) for i in range(4)]
+        self.state = GameState.initializeRandomState(1, self.buttons)
 
     def update(self):
         for event in pygame.event.get():
@@ -51,9 +72,9 @@ class Game:
                 for button in self.buttons:
                     if button.isClicked(x, y):
                         # Board will shift shRow units in the row of teh button + delta and shCol units in the column of the button + delta.
-                        shRow, shCol, delta = button.getMove(self.state.level)
-                        newBoard = self.state.board.shiftRow(button.index + delta, shRow).shiftColumn(button.index + delta, shCol)
-                        self.state = GameState(newBoard, self.state.level, self.state.score + 1)
+                        self.state = self.state.move(button)
+                        if self.state.isGoalState():
+                            self.state = GameState.initializeRandomState(self.state.level + 1, self.buttons)
 
     def draw(self):
         # Fill the screen with a color
@@ -79,26 +100,39 @@ class Game:
 
 
 if __name__ == "__main__":
+
+    """ 
+    # TEST 1
+    
     matrix = [[0, 0, 0, 0, 0, 0, 0, 0, 0],
              [0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0],
+             [0, 0, 0, 0, 1, 0, 0, 0, 0],
              [0, 0, 0, 1, 1, 1, 0, 0, 0],
              [0, 0, 0, 1, 1, 1, 0, 0, 0],
-             [0, 0, 0, 1, 1, 1, 0, 0, 0],
+             [0, 0, 0, 1, 0, 1, 0, 0, 0],
              [0, 0, 0, 0, 0, 0, 0, 0, 0],
              [0, 0, 0, 0, 0, 0, 0, 0, 0],
              [0, 0, 0, 0, 0, 0, 0, 0, 0]]
     
-    state = GameState(Board(matrix), 1, 0)
-    print(state.piecesCorrectlyPositioned())
-    print(state.isGoalState())
-
+    board = Board(matrix)
+    level = 1
+    state = GameState(board, level, 0)
     button_side, button_index = 2, 4
-    shRow, shCol, delta = Button(button_side, button_index).getMove(1)
-    print(shRow, shCol, delta)
-    newBoard = state.board.shiftRow(button_index + delta, shRow).shiftColumn(button_index + delta, shCol)
+    button = Button(button_side, button_index)
+
+    print("BOARD:")
+    print(state.board)
+    print(f'Button: {button}')
+    newState = state.move(button)
     print("NEW BOARD:")
-    print(newBoard)
+    print(newState.board)
 
     # ITS WORKINNNNNNNNNNNNNNNNN
+    
+    """
+
+    # TEST 2
+    buttons = [Button(i,j) for j in range(9) for i in range(4)]
+    print(GameState.initializeRandomState(1, buttons))
+   
 
