@@ -25,6 +25,9 @@ while running:
     # Draw everything
     game.draw()
 
+    # Update the game
+    # game.update()
+
     # Swap buffers
     pygame.display.flip()
 

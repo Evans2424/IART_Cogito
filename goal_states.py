@@ -110,7 +110,7 @@ goalMatrices = [
     [0, 0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0, 0]],
-    
+
     [[0, 0, 0, 0, 0, 0, 0, 0, 0],    # 12
     [0, 0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -123,4 +123,4 @@ goalMatrices = [
 ]
 
 def getGoalMatrix(level):
-    return goalMatrices[level-1]
+    return goalMatrices[level//12]

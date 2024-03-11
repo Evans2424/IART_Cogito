@@ -16,8 +16,8 @@ class GameState:
         """ board is a Board object, level is an integer between 1 as 12 and score is an integer >= 0 """
         if not isinstance(board, Board):
             raise ValueError("board must be an instance of Board")
-        if not (isinstance(level, int) and 1 <= level <= 12):
-            raise ValueError("level must be an integer between 1 and 12")
+        if not (isinstance(level, int) and 0 <= level <= 144):
+            raise ValueError("level must be an integer between 1 and 143")
         if not (isinstance(score, int) and score >= 0):
             raise ValueError("score must be a non-negative integer")
 
@@ -41,7 +41,7 @@ class GameState:
         return goal_states.getGoalMatrix(level)
     
     def move(self, button):
-        """ Board will shift shRow units in the row of teh button + delta and shCol units in the column of the button + delta. """
+        """ Board will shift shRow units in the row of the button + delta and shCol units in the column of the button + delta. """
         shRow, shCol, delta = button.getMove(self.level)
         newBoard = self.board.shiftRow(button.index + delta, shRow).shiftColumn(button.index + delta, shCol)
         return GameState(newBoard, self.level, self.score + 1)
@@ -66,15 +66,19 @@ class Game:
     def __init__(self, screen):
         self.screen = screen
         self.buttons = [Button(i,j) for j in range(9) for i in range(4)]
-        self.state = GameState.initializeRandomState(1, self.buttons)
+        self.state = GameState.initializeRandomState(0, self.buttons)
 
     def checkButtons(self, x, y):
+        pass
         for button in self.buttons:
             if button.isClicked(x, y):
                 print(f"You clicked me! {button}")
                 self.state = self.state.move(button)
                 if self.state.isGoalState():
-                    print("Goal state reached")
+                    print("Goal state reached!")
+                    if self.state.level == 143:
+                        print("You won the game!")
+                        return
                     self.state = GameState.initializeRandomState(self.state.level + 1, self.buttons)
 
     def draw(self):
@@ -89,7 +93,7 @@ class Game:
         font = pygame.font.Font(None, 36)
 
         # Render the level and score
-        levelText = font.render(f"Level: {self.state.level}", True, (255, 255, 255))
+        levelText = font.render(f"Level: {self.state.level//12 + 1}", True, (255, 255, 255))
         scoreText = font.render(f"Score: {self.state.score}", True, (255, 255, 255))
 
         # Draw the level and score on the right side of the board

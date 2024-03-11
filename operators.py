@@ -65,4 +65,4 @@ operations = [
 
 
 def getOperation(level):
-    return operations[level - 1]
+    return operations[level%12]
