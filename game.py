@@ -53,6 +53,9 @@ class GameState:
         randMoves = random.randint(50, 100)
         for _ in range(randMoves):
             button = random.choice(buttons)
+            newState = goalState.move(button)
+            if newState.isGoalState():
+                continue
             goalState = goalState.move(button)
 
         return GameState(goalState.board, level, 0)
@@ -127,10 +130,10 @@ if __name__ == "__main__":
 
     # ITS WORKINNNNNNNNNNNNNNNNN
     
-    """
-
     # TEST 2
     buttons = [Button(i,j) for j in range(9) for i in range(4)]
     print(GameState.initializeRandomState(1, buttons))
+    """
+
    
 

@@ -6,7 +6,7 @@ operations = [
         "perpDir": 0,
         "delta": 0
     },
-    {                       # Level 1
+    {                       # Level 2
         "ownDir": 1,
         "perpDir": 0,
         "delta": 0
