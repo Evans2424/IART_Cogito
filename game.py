@@ -93,7 +93,7 @@ class Game:
         font = pygame.font.Font(None, 36)
 
         # Render the level and score
-        levelText = font.render(f"Level: {self.state.level//12 + 1}", True, (255, 255, 255))
+        levelText = font.render(f"Level: {self.state.level + 1}", True, (255, 255, 255))
         scoreText = font.render(f"Score: {self.state.score}", True, (255, 255, 255))
 
         # Draw the level and score on the right side of the board
