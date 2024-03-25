@@ -52,3 +52,7 @@ class Button:
         #esquerda
         elif self.side == 3:
             return op["ownDir"], -op["perpDir"], op["delta"]
+        
+    def isValid(self, level):
+        """ Return True if the button is valid for the current level """
+        return (self.side, self.index) not in operators.getOperation(level)["ignoreButtons"]

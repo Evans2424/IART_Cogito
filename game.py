@@ -5,6 +5,7 @@ import pygame
 import goal_states
 import operators
 import random
+from time import sleep
 
 
 class GameState:
@@ -29,17 +30,16 @@ class GameState:
     def __str__(self):
         return f"Level={self.level}, Score={self.score}, \nBoard=\n{self.board}"
 
+    def getGoalMatrix(self):
+        return goal_states.getGoalMatrix(self.level)
+    
     def piecesCorrectlyPositioned(self):
         """ Return the number of pieces that are in the correct position """
-        return sum(self.board.matrix[i][j] and goal_states.getGoalMatrix(self.level)[i][j] for i in range(9) for j in range(9))
+        return sum(self.board.matrix[i][j] and self.getGoalMatrix()[i][j] for i in range(9) for j in range(9))
 
     def isGoalState(self):
         """ Return True if the board is in the goal state """
-        return self.piecesCorrectlyPositioned() == sum(goal_states.getGoalMatrix(self.level)[i][j] for i in range(9) for j in range(9))
-    
-    @staticmethod
-    def getGoalMatrix(level):
-        return goal_states.getGoalMatrix(level)
+        return self.piecesCorrectlyPositioned() == sum(self.getGoalMatrix()[i][j] for i in range(9) for j in range(9))
     
     def move(self, button):
         """ Board will shift shRow units in the row of the button + delta and shCol units in the column of the button + delta. """
@@ -86,7 +86,7 @@ class GameState:
         randMoves = random.randint(50, 100)
         for _ in range(randMoves):
             button = random.choice(buttons)
-            while (button.side, button.index) in operators.getOperation(level)["ignoreButtons"]:
+            while not button.isValid(level):
                 button = random.choice(buttons)
 
             newState = goalState.move(button)
@@ -102,28 +102,32 @@ class Game:
     def __init__(self, screen):
         self.screen = screen
         self.buttons = [Button(i,j) for j in range(9) for i in range(4)]
-        self.state = GameState.initializeRandomState(12-1, self.buttons) #FIXME: Change to 0 after testing
+        self.state = GameState.initializeRandomState(0, self.buttons)
 
     def checkButtons(self, x, y):
         for button in self.buttons:
-            if (button.side, button.index) in operators.getOperation(self.state.level)["ignoreButtons"]:
+            if not button.isValid(self.state.level):
                 continue
             if button.isClicked(x, y):
                 print(f"You clicked me! {button}")
                 self.state = self.state.move(button)
-                if self.state.isGoalState():
-                    print("Goal state reached!")
-                    if self.state.level == 143:
-                        print("You won the game!")
-                        return
-                    self.state = GameState.initializeRandomState(self.state.level + 1, self.buttons)
+
+    def update(self):
+        if self.state.isGoalState():
+            print("Goal state reached!")
+            sleep(1)
+            if self.state.level == (len(operators.operations) * len(goal_states.goalMatrices) - 1):
+                return True
+            
+            self.state = GameState.initializeRandomState(self.state.level + 1, self.buttons)
+        return False
 
     def draw(self):
         # Fill the screen with a color
         self.screen.fill((128, 128, 128))
 
         # Draw the game board
-        goalMatrix = GameState.getGoalMatrix(self.state.level)
+        goalMatrix = self.state.getGoalMatrix()
         self.state.board.draw(self.screen, goalMatrix)
 
         # Create a font object
@@ -139,45 +143,13 @@ class Game:
 
         # Draw the buttons
         for button in self.buttons:
-            if (button.side, button.index) in operators.getOperation(self.state.level)["ignoreButtons"]:
+            if not button.isValid(self.state.level):
                 continue
             button.draw(self.screen)
-
+        
 
 if __name__ == "__main__":
-
-    """ 
-    # TEST 1
-    
-    matrix = [[0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 1, 0, 0, 0, 0],
-             [0, 0, 0, 1, 1, 1, 0, 0, 0],
-             [0, 0, 0, 1, 1, 1, 0, 0, 0],
-             [0, 0, 0, 1, 0, 1, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0]]
-    
-    board = Board(matrix)
-    level = 1
-    state = GameState(board, level, 0)
-    button_side, button_index = 2, 4
-    button = Button(button_side, button_index)
-
-    print("BOARD:")
-    print(state.board)
-    print(f'Button: {button}')
-    newState = state.move(button)
-    print("NEW BOARD:")
-    print(newState.board)
-
-    # ITS WORKINNNNNNNNNNNNNNNNN
-    
-    # TEST 2
-    buttons = [Button(i,j) for j in range(9) for i in range(4)]
-    print(GameState.initializeRandomState(1, buttons))
-    """
+    print("This is the game module")
 
    
 
