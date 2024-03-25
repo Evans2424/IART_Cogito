@@ -35,7 +35,7 @@ class GameState:
 
     def isGoalState(self):
         """ Return True if the board is in the goal state """
-        return self.piecesCorrectlyPositioned() == 9
+        return self.piecesCorrectlyPositioned() == sum(goal_states.getGoalMatrix(self.level)[i][j] for i in range(9) for j in range(9))
     
     @staticmethod
     def getGoalMatrix(level):
@@ -46,11 +46,37 @@ class GameState:
         shRow, shCol, delta = button.getMove(self.level)
         match delta:
             case 0:
-                pos = button.index
+                newBoard = self.board.shiftRow(button.index, shRow).shiftColumn(button.index, shCol)
             case 1:
-                pos = 8 - button.index
+                symetric = 8 - button.index
+                newBoard = self.board.shiftRow(symetric, shRow).shiftColumn(symetric, shCol)
+            case 2:
+                symetric = 8 - button.index
+                newBoard = self.board.shiftRow(button.index, shRow).shiftColumn(button.index, shCol)
+                newBoard = newBoard.shiftRow(symetric, -shRow).shiftColumn(symetric, -shCol)
+            case 3:
+                    #cima ou baixo
+                    if (button.side % 2 == 0):
+                        newBoard = self.board.shiftColumn(button.index, shCol)
+                        
+                        #exceção para regra do nivel 10 (estava a mexer uma linha sem botão)
+                        if button.index != 1: 
+                            newBoard = newBoard.shiftRow(button.index, shRow)
+                    else:
+                        newBoard = self.board.shiftRow(button.index, shRow).shiftColumn(button.index, shCol)
+            case 4:
+                symetric = 8 - button.index
+                newBoard = self.board.shiftColumn(button.index, shCol).shiftRow(button.index, shRow)
+                newBoard = newBoard.shiftColumn(symetric, shCol).shiftRow(symetric, shRow)
+            case 5:
+                next = (button.index + 1) % 9
+                newBoard = self.board.shiftRow(button.index, shRow).shiftColumn(button.index, shCol)
+                newBoard = newBoard.shiftRow(next, shRow).shiftColumn(next, shCol)
+            case 6:
+                prev = (button.index - 2) % 9
+                newBoard = self.board.shiftRow(button.index, shRow).shiftColumn(button.index, shCol)
+                newBoard = newBoard.shiftRow(prev, shRow).shiftColumn(prev, shCol)
 
-        newBoard = self.board.shiftRow(pos, shRow).shiftColumn(pos, shCol)
         return GameState(newBoard, self.level, self.score + 1)
     
     @staticmethod
@@ -76,7 +102,7 @@ class Game:
     def __init__(self, screen):
         self.screen = screen
         self.buttons = [Button(i,j) for j in range(9) for i in range(4)]
-        self.state = GameState.initializeRandomState(0, self.buttons) #FIXME: Change to 0 after testing
+        self.state = GameState.initializeRandomState(12-1, self.buttons) #FIXME: Change to 0 after testing
 
     def checkButtons(self, x, y):
         for button in self.buttons:
