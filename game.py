@@ -3,6 +3,7 @@ from button import Button
 from constants import MARGIN, cellSize
 import pygame
 import goal_states
+import operators
 import random
 
 
@@ -43,7 +44,13 @@ class GameState:
     def move(self, button):
         """ Board will shift shRow units in the row of the button + delta and shCol units in the column of the button + delta. """
         shRow, shCol, delta = button.getMove(self.level)
-        newBoard = self.board.shiftRow(button.index + delta, shRow).shiftColumn(button.index + delta, shCol)
+        match delta:
+            case 0:
+                pos = button.index
+            case 1:
+                pos = 8 - button.index
+
+        newBoard = self.board.shiftRow(pos, shRow).shiftColumn(pos, shCol)
         return GameState(newBoard, self.level, self.score + 1)
     
     @staticmethod
@@ -53,6 +60,9 @@ class GameState:
         randMoves = random.randint(50, 100)
         for _ in range(randMoves):
             button = random.choice(buttons)
+            while (button.side, button.index) in operators.getOperation(level)["ignoreButtons"]:
+                button = random.choice(buttons)
+
             newState = goalState.move(button)
             if newState.isGoalState():
                 continue
@@ -66,11 +76,12 @@ class Game:
     def __init__(self, screen):
         self.screen = screen
         self.buttons = [Button(i,j) for j in range(9) for i in range(4)]
-        self.state = GameState.initializeRandomState(0, self.buttons)
+        self.state = GameState.initializeRandomState(0, self.buttons) #FIXME: Change to 0 after testing
 
     def checkButtons(self, x, y):
-        pass
         for button in self.buttons:
+            if (button.side, button.index) in operators.getOperation(self.state.level)["ignoreButtons"]:
+                continue
             if button.isClicked(x, y):
                 print(f"You clicked me! {button}")
                 self.state = self.state.move(button)
@@ -100,7 +111,10 @@ class Game:
         self.screen.blit(levelText, (2*MARGIN + 10*cellSize + 10, MARGIN))
         self.screen.blit(scoreText, (2*MARGIN + 10*cellSize + 10, MARGIN + 40))
 
+        # Draw the buttons
         for button in self.buttons:
+            if (button.side, button.index) in operators.getOperation(self.state.level)["ignoreButtons"]:
+                continue
             button.draw(self.screen)
 
 
