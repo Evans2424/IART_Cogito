@@ -24,12 +24,15 @@ while running:
 
     # Draw everything
     game.draw()
-
-    # Update the game
-    # game.update()
-
     # Swap buffers
     pygame.display.flip()
+
+    # Update the game
+    won = game.update()
+    if won:
+        # End the game
+        print("You won the game!")
+        running = False
 
     # Cap the frame rate
     pygame.time.Clock().tick(FPS)

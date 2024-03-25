@@ -40,11 +40,19 @@ class Button:
     def getMove(self, level):
         """ Return the shiftRow, shiftColumn and delta for the move associated with the button """
         op = operators.getOperation(level)
+        #cima
         if self.side == 0:
-            return op["perpDir"], op["ownDir"], op["delta"]
+            return -op["perpDir"], op["ownDir"], op["delta"]
+        #direita
         elif self.side == 1:
             return -op["ownDir"], op["perpDir"], op["delta"]
+        #baixo
         elif self.side == 2:
             return op["perpDir"], -op["ownDir"], op["delta"]
+        #esquerda
         elif self.side == 3:
-            return op["ownDir"], op["perpDir"], op["delta"]
+            return op["ownDir"], -op["perpDir"], op["delta"]
+        
+    def isValid(self, level):
+        """ Return True if the button is valid for the current level """
+        return (self.side, self.index) not in operators.getOperation(level)["ignoreButtons"]
