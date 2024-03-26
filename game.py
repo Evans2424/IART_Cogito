@@ -1,6 +1,6 @@
 from board import Board
 from button import Button
-from constants import MARGIN, cellSize
+from constants import MARGIN, cellSize, HEIGHT
 import pygame
 import goal_states
 import operators
@@ -29,6 +29,9 @@ class GameState:
 
     def __str__(self):
         return f"Level={self.level}, Score={self.score}, \nBoard=\n{self.board}"
+    
+    def __eq__(self, other):
+        return self.board == other.board and self.level == other.level
 
     def getGoalMatrix(self):
         return goal_states.getGoalMatrix(self.level)
@@ -82,19 +85,100 @@ class GameState:
     @staticmethod
     def initializeRandomState(level, buttons):
         goalState = GameState(Board(goal_states.getGoalMatrix(level)), level, 0)
-        # random moves
-        randMoves = random.randint(50, 100)
+        randMoves = random.randint(20, 30)
         for _ in range(randMoves):
             button = random.choice(buttons)
             while not button.isValid(level):
                 button = random.choice(buttons)
 
             newState = goalState.move(button)
-            if newState.isGoalState():
-                continue
+            while newState.isGoalState() or newState == goalState:
+                button = random.choice(buttons)
+                while not button.isValid(level):
+                    button = random.choice(buttons)
+                newState = goalState.move(button)
             goalState = goalState.move(button)
 
         return GameState(goalState.board, level, 0)
+
+
+class TreeNode:
+
+    def __init__ (self, state, parentNode=None, parentButton=None):
+        self.state = state
+        self.parentNode = parentNode
+        self.parentButton = parentButton
+    
+    def __hash__(self):
+        return hash((str(self.state.board), self.state.level))
+
+    def isGoalState(self):
+        return self.state.isGoalState()
+    
+    def getChildren(self, buttons):
+        nodes = []
+        for button in buttons:
+            newState = self.state.move(button)
+            if button.isValid(self.state.level) and newState != self.state:
+                nodes.append(TreeNode(newState, self, button))
+        return nodes
+    
+    def printPath(self):
+        file = open("path.txt", "w")
+        path = []
+        node = self
+        while node:
+            path.append(node)
+            node = node.parentNode
+
+        path.reverse()
+        file.write(f'{path[0].state}\n')
+        for node in path[1:]:
+            print(node.parentButton)
+            file.write(f'{node.parentButton}\n')
+            file.write(f'{node.state}\n')
+        file.close()
+
+    def getButtonSequence(self):
+        if self.parentNode == None:
+            return []
+        return self.parentNode.getButtonSequence() + [self.parentButton]
+
+
+def dls(node, buttons, depth, visited=set()):
+    if node.isGoalState():
+        return node
+    if depth == 0:
+        return None
+    for child in node.getChildren(buttons):
+        if not child in visited:
+            visited.add(child)
+            result = dls(child, buttons, depth - 1, visited)
+            if result:
+                return result
+    return None
+
+def ids(node, buttons, maxDepth=8):
+    for depth in range(1,maxDepth):
+        result = dls(node, buttons, depth)
+        if result:
+            return result
+    return None
+
+def bfs(root, buttons):
+    queue = [root]
+    visited = set()
+    while queue:
+        node = queue.pop(0)
+        visited.add(node)
+        if node.isGoalState():
+            return node
+        children = node.getChildren(buttons)
+        for child in children:
+            if not child in visited:
+                child.parent = node
+                queue.append(child)
+    return None
 
 
 class Game:
@@ -103,6 +187,17 @@ class Game:
         self.screen = screen
         self.buttons = [Button(i,j) for j in range(9) for i in range(4)]
         self.state = GameState.initializeRandomState(0, self.buttons)
+        self.algorithms = [bfs, ids]
+        self.selectedAlgorithm = 0
+        self.maxDepth = 5
+        self.thinking = False
+
+    def changeAlgorithm(self, delta):
+        self.selectedAlgorithm = (self.selectedAlgorithm + delta) % len(self.algorithms)
+
+    def changeMaxDepth(self, delta):
+        self.maxDepth = max(1, self.maxDepth + delta)
+        self.maxDepth = min(10, self.maxDepth)
 
     def checkButtons(self, x, y):
         for button in self.buttons:
@@ -121,6 +216,49 @@ class Game:
             
             self.state = GameState.initializeRandomState(self.state.level + 1, self.buttons)
         return False
+    
+    def callAlgorithm(self):
+        self.thinking = True
+        self.draw()
+        pygame.display.flip()
+
+        algorithm = self.algorithms[self.selectedAlgorithm]
+        match algorithm.__name__:
+            case "bfs":
+                goalNode = algorithm(TreeNode(self.state), self.buttons)
+            case "ids":
+                goalNode = algorithm(TreeNode(self.state), self.buttons, self.maxDepth)
+            case _:
+                raise ValueError("Algorithm not implemented")
+        
+        self.thinking = False
+        return goalNode
+
+    def resolveLevel(self):
+        goalNode = self.callAlgorithm()
+        
+        if goalNode:
+            buttonSequence = goalNode.getButtonSequence()
+            for button in buttonSequence:
+                print(f"AI clicked me! {button}")
+                self.state = self.state.move(button)
+                button.highlight = True
+                self.draw()
+                pygame.display.flip()
+                sleep(1)
+
+
+    def giveHint(self):
+        goalNode = self.callAlgorithm()
+
+        if goalNode:
+            buttonSequence = goalNode.getButtonSequence()
+            button = buttonSequence[0]
+            print(f"AI suggested me! {button}")
+            button.highlight = True
+            self.draw()
+            pygame.display.flip()
+            sleep(2)
 
     def draw(self):
         # Fill the screen with a color
@@ -136,10 +274,18 @@ class Game:
         # Render the level and score
         levelText = font.render(f"Level: {self.state.level + 1}", True, (255, 255, 255))
         scoreText = font.render(f"Score: {self.state.score}", True, (255, 255, 255))
+        algorithmText = font.render(f"Algorithm: {self.algorithms[self.selectedAlgorithm].__name__.upper()}", True, (255, 255, 255))
+        depthText = font.render(f"Max Depth: {self.maxDepth}", True, (255, 255, 255))
+        thinkingText = font.render("Thinking...", True, (255, 255, 255))
 
         # Draw the level and score on the right side of the board
         self.screen.blit(levelText, (2*MARGIN + 10*cellSize + 10, MARGIN))
         self.screen.blit(scoreText, (2*MARGIN + 10*cellSize + 10, MARGIN + 40))
+        self.screen.blit(algorithmText, (2*MARGIN + 10*cellSize + 10, MARGIN + 120))
+        if self.selectedAlgorithm == 1:
+            self.screen.blit(depthText, (2*MARGIN + 10*cellSize + 10, MARGIN + 160))
+        if self.thinking:
+            self.screen.blit(thinkingText, (2*MARGIN + 10*cellSize + 10, HEIGHT - 2*MARGIN))
 
         # Draw the buttons
         for button in self.buttons:
@@ -150,6 +296,3 @@ class Game:
 
 if __name__ == "__main__":
     print("This is the game module")
-
-   
-
