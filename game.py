@@ -85,8 +85,7 @@ class GameState:
     @staticmethod
     def initializeRandomState(level, buttons):
         goalState = GameState(Board(goal_states.getGoalMatrix(level)), level, 0)
-        # randMoves = random.randint(50, 100)
-        randMoves = 8
+        randMoves = random.randint(20, 30)
         for _ in range(randMoves):
             button = random.choice(buttons)
             while not button.isValid(level):
@@ -297,14 +296,3 @@ class Game:
 
 if __name__ == "__main__":
     print("This is the game module")
-
-    buttons = [Button(i,j) for j in range(9) for i in range(4)]
-    initialState = GameState.initializeRandomState(0, buttons)
-    initialNode = TreeNode(initialState)
-
-    goalNode = ids(initialNode, buttons, 7)
-
-    if goalNode:
-        goalNode.printPath()
-    else:
-        print("No solution found")
