@@ -26,6 +26,14 @@ while running:
                 game.resolveLevel()
             if event.key == pygame.K_h:
                 game.giveHint()
+            if event.key == pygame.K_LEFT:
+                game.changeAlgorithm(-1)
+            if event.key == pygame.K_RIGHT:
+                game.changeAlgorithm(1)
+            if event.key == pygame.K_UP:
+                game.changeMaxDepth(1)
+            if event.key == pygame.K_DOWN:
+                game.changeMaxDepth(-1)
 
     # Draw everything
     game.draw()

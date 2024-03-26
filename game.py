@@ -1,6 +1,6 @@
 from board import Board
 from button import Button
-from constants import MARGIN, cellSize
+from constants import MARGIN, cellSize, HEIGHT
 import pygame
 import goal_states
 import operators
@@ -159,7 +159,7 @@ def dls(node, buttons, depth, visited=set()):
                 return result
     return None
 
-def ids(node, buttons, maxDepth):
+def ids(node, buttons, maxDepth=8):
     for depth in range(1,maxDepth):
         result = dls(node, buttons, depth)
         if result:
@@ -188,6 +188,17 @@ class Game:
         self.screen = screen
         self.buttons = [Button(i,j) for j in range(9) for i in range(4)]
         self.state = GameState.initializeRandomState(0, self.buttons)
+        self.algorithms = [bfs, ids]
+        self.selectedAlgorithm = 0
+        self.maxDepth = 5
+        self.thinking = False
+
+    def changeAlgorithm(self, delta):
+        self.selectedAlgorithm = (self.selectedAlgorithm + delta) % len(self.algorithms)
+
+    def changeMaxDepth(self, delta):
+        self.maxDepth = max(1, self.maxDepth + delta)
+        self.maxDepth = min(10, self.maxDepth)
 
     def checkButtons(self, x, y):
         for button in self.buttons:
@@ -207,9 +218,25 @@ class Game:
             self.state = GameState.initializeRandomState(self.state.level + 1, self.buttons)
         return False
     
+    def callAlgorithm(self):
+        self.thinking = True
+        self.draw()
+        pygame.display.flip()
+
+        algorithm = self.algorithms[self.selectedAlgorithm]
+        match algorithm.__name__:
+            case "bfs":
+                goalNode = algorithm(TreeNode(self.state), self.buttons)
+            case "ids":
+                goalNode = algorithm(TreeNode(self.state), self.buttons, self.maxDepth)
+            case _:
+                raise ValueError("Algorithm not implemented")
+        
+        self.thinking = False
+        return goalNode
+
     def resolveLevel(self):
-        initialNode = TreeNode(self.state)
-        goalNode = bfs(initialNode, self.buttons)
+        goalNode = self.callAlgorithm()
         
         if goalNode:
             buttonSequence = goalNode.getButtonSequence()
@@ -223,8 +250,7 @@ class Game:
 
 
     def giveHint(self):
-        initialNode = TreeNode(self.state)
-        goalNode = bfs(initialNode, self.buttons)
+        goalNode = self.callAlgorithm()
 
         if goalNode:
             buttonSequence = goalNode.getButtonSequence()
@@ -249,10 +275,18 @@ class Game:
         # Render the level and score
         levelText = font.render(f"Level: {self.state.level + 1}", True, (255, 255, 255))
         scoreText = font.render(f"Score: {self.state.score}", True, (255, 255, 255))
+        algorithmText = font.render(f"Algorithm: {self.algorithms[self.selectedAlgorithm].__name__.upper()}", True, (255, 255, 255))
+        depthText = font.render(f"Max Depth: {self.maxDepth}", True, (255, 255, 255))
+        thinkingText = font.render("Thinking...", True, (255, 255, 255))
 
         # Draw the level and score on the right side of the board
         self.screen.blit(levelText, (2*MARGIN + 10*cellSize + 10, MARGIN))
         self.screen.blit(scoreText, (2*MARGIN + 10*cellSize + 10, MARGIN + 40))
+        self.screen.blit(algorithmText, (2*MARGIN + 10*cellSize + 10, MARGIN + 120))
+        if self.selectedAlgorithm == 1:
+            self.screen.blit(depthText, (2*MARGIN + 10*cellSize + 10, MARGIN + 160))
+        if self.thinking:
+            self.screen.blit(thinkingText, (2*MARGIN + 10*cellSize + 10, HEIGHT - 2*MARGIN))
 
         # Draw the buttons
         for button in self.buttons:
