@@ -5,6 +5,9 @@ class Board:
     def __init__(self, matrix):
         self.matrix = matrix
 
+    def __eq__(self, other):
+        return self.matrix == other.matrix
+
     def shiftRow(self, row, num):
         """ Shift the row by num positions to the right. If num is negative, shift to the left. """
         new_matrix = self.matrix.copy()

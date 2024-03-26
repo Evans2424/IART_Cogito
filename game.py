@@ -29,6 +29,9 @@ class GameState:
 
     def __str__(self):
         return f"Level={self.level}, Score={self.score}, \nBoard=\n{self.board}"
+    
+    def __eq__(self, other):
+        return self.board == other.board and self.level == other.level
 
     def getGoalMatrix(self):
         return goal_states.getGoalMatrix(self.level)
@@ -82,19 +85,85 @@ class GameState:
     @staticmethod
     def initializeRandomState(level, buttons):
         goalState = GameState(Board(goal_states.getGoalMatrix(level)), level, 0)
-        # random moves
-        randMoves = random.randint(50, 100)
+        # randMoves = random.randint(50, 100)
+        randMoves = 5
         for _ in range(randMoves):
             button = random.choice(buttons)
             while not button.isValid(level):
                 button = random.choice(buttons)
 
             newState = goalState.move(button)
-            if newState.isGoalState():
-                continue
+            while newState.isGoalState() or newState == goalState:
+                button = random.choice(buttons)
+                while not button.isValid(level):
+                    button = random.choice(buttons)
+                newState = goalState.move(button)
             goalState = goalState.move(button)
 
         return GameState(goalState.board, level, 0)
+
+
+class TreeNode:
+
+    def __init__ (self, state, parentNode=None, parentButton=None):
+        self.state = state
+        self.parentNode = parentNode
+        self.parentButton = parentButton
+    
+    def __hash__(self):
+        return hash((str(self.state.board), self.state.level))
+
+    def isGoalState(self):
+        return self.state.isGoalState()
+    
+    def getChildren(self, buttons):
+        nodes = []
+        for button in buttons:
+            newState = self.state.move(button)
+            if button.isValid(self.state.level) and newState != self.state:
+                nodes.append(TreeNode(newState, self, button))
+        return nodes
+    
+    def printPath(self):
+        file = open("path.txt", "w")
+        path = []
+        node = self
+        while node:
+            path.append(node)
+            node = node.parentNode
+
+        path.reverse()
+        file.write(f'{path[0].state}\n')
+        for node in path[1:]:
+            print(node.parentButton)
+            file.write(f'{node.parentButton}\n')
+            file.write(f'{node.state}\n')
+        file.close()
+
+    def getButtonSequence(self):
+        path = []
+        node = self
+
+
+def bfs(root, buttons):
+    #open file output.txt to write
+    file = open("output.txt", "w")
+    queue = [root]
+    visited = set()
+    while queue:
+        node = queue.pop(0)
+        visited.add(node)
+        file.write(f'{node.state}\n')
+        if node.isGoalState():
+            file.close()
+            return node
+        children = node.getChildren(buttons)
+        for child in children:
+            if not child in visited:
+                child.parent = node
+                queue.append(child)
+    file.close()
+    return None
 
 
 class Game:
@@ -121,6 +190,16 @@ class Game:
             
             self.state = GameState.initializeRandomState(self.state.level + 1, self.buttons)
         return False
+    
+    def resolveLevel(self):
+        initialNode = TreeNode(self.state)
+        goalNode = bfs(initialNode, self.buttons)
+        
+        if goalNode:
+            button_sequence = goalNode.getButtonSequence()
+            for button in button_sequence:
+                self.state = self.state.move(button)
+                sleep(0.5)
 
     def draw(self):
         # Fill the screen with a color
@@ -151,5 +230,11 @@ class Game:
 if __name__ == "__main__":
     print("This is the game module")
 
-   
+    buttons = [Button(i,j) for j in range(9) for i in range(4)]
+    initialState = GameState.initializeRandomState(0, buttons)
+    initialNode = TreeNode(initialState)
 
+    goalNode = bfs(initialNode, buttons)
+
+    if goalNode:
+        goalNode.printPath()

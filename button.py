@@ -28,6 +28,9 @@ class Button:
     def __str__(self):
         return f"Button({self.side}, {self.index})"
 
+    def __eq__(self, other):
+        return self.side == other.side and self.index == other.index
+
     def draw(self, screen):
         """ Draw the button on the screen - its round and filled with blue """
         buttonColor = (0, 0, 255)
