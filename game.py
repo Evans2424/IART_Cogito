@@ -86,7 +86,7 @@ class GameState:
     def initializeRandomState(level, buttons):
         goalState = GameState(Board(goal_states.getGoalMatrix(level)), level, 0)
         # randMoves = random.randint(50, 100)
-        randMoves = 5
+        randMoves = 8
         for _ in range(randMoves):
             button = random.choice(buttons)
             while not button.isValid(level):
@@ -145,24 +145,39 @@ class TreeNode:
         node = self
 
 
+def dls(node, buttons, depth, visited=set()):
+    if node.isGoalState():
+        return node
+    if depth == 0:
+        return None
+    for child in node.getChildren(buttons):
+        if not child in visited:
+            visited.add(child)
+            result = dls(child, buttons, depth - 1, visited)
+            if result:
+                return result
+    return None
+
+def ids(node, buttons, maxDepth):
+    for depth in range(1,maxDepth):
+        result = dls(node, buttons, depth)
+        if result:
+            return result
+    return None
+
 def bfs(root, buttons):
-    #open file output.txt to write
-    file = open("output.txt", "w")
     queue = [root]
     visited = set()
     while queue:
         node = queue.pop(0)
         visited.add(node)
-        file.write(f'{node.state}\n')
         if node.isGoalState():
-            file.close()
             return node
         children = node.getChildren(buttons)
         for child in children:
             if not child in visited:
                 child.parent = node
                 queue.append(child)
-    file.close()
     return None
 
 
@@ -234,7 +249,9 @@ if __name__ == "__main__":
     initialState = GameState.initializeRandomState(0, buttons)
     initialNode = TreeNode(initialState)
 
-    goalNode = bfs(initialNode, buttons)
+    goalNode = ids(initialNode, buttons, 7)
 
     if goalNode:
         goalNode.printPath()
+    else:
+        print("No solution found")
