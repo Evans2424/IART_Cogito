@@ -21,6 +21,11 @@ while running:
         if event.type == pygame.MOUSEBUTTONDOWN:
             x, y = pygame.mouse.get_pos()
             game.checkButtons(x, y)
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_s:
+                game.resolveLevel()
+            if event.key == pygame.K_h:
+                game.giveHint()
 
     # Draw everything
     game.draw()

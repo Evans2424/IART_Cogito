@@ -13,7 +13,6 @@ class Button:
             raise ValueError("side must be in the range [0, 3]")
         if not 0 <= index <= 8:
             raise ValueError("index must be in the range [0, 8]")
-
         self.side = side
         self.index = index
         if side == 0:
@@ -24,6 +23,8 @@ class Button:
             self.position = (MARGIN + (index+1)*cellSize, MARGIN + 10*cellSize)
         elif side == 3:
             self.position = (MARGIN, MARGIN + (index+1)*cellSize)
+        
+        self.highlight = False
 
     def __str__(self):
         return f"Button({self.side}, {self.index})"
@@ -33,7 +34,11 @@ class Button:
 
     def draw(self, screen):
         """ Draw the button on the screen - its round and filled with blue """
-        buttonColor = (0, 0, 255)
+        if self.highlight:
+            buttonColor = (0, 255, 0)
+            self.highlight = False
+        else:
+            buttonColor = (0, 0, 255)
         pygame.draw.circle(screen, buttonColor, self.position, cellSize // 2 - 5)
 
     def isClicked(self, x, y):

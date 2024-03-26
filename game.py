@@ -141,8 +141,9 @@ class TreeNode:
         file.close()
 
     def getButtonSequence(self):
-        path = []
-        node = self
+        if self.parentNode == None:
+            return []
+        return self.parentNode.getButtonSequence() + [self.parentButton]
 
 
 def bfs(root, buttons):
@@ -196,10 +197,28 @@ class Game:
         goalNode = bfs(initialNode, self.buttons)
         
         if goalNode:
-            button_sequence = goalNode.getButtonSequence()
-            for button in button_sequence:
+            buttonSequence = goalNode.getButtonSequence()
+            for button in buttonSequence:
+                print(f"AI clicked me! {button}")
                 self.state = self.state.move(button)
-                sleep(0.5)
+                button.highlight = True
+                self.draw()
+                pygame.display.flip()
+                sleep(1)
+
+
+    def giveHint(self):
+        initialNode = TreeNode(self.state)
+        goalNode = bfs(initialNode, self.buttons)
+
+        if goalNode:
+            buttonSequence = goalNode.getButtonSequence()
+            button = buttonSequence[0]
+            print(f"AI suggested me! {button}")
+            button.highlight = True
+            self.draw()
+            pygame.display.flip()
+            sleep(2)
 
     def draw(self):
         # Fill the screen with a color
