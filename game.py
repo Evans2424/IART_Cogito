@@ -3,7 +3,7 @@ from button import Button
 from constants import MARGIN, cellSize, HEIGHT
 import goal_states
 import operators
-from algorithms import * #bfs, ids, gs, a_star, wa_star, TreeNode, correctPieces, manhattanDistancesFreeGS, manhattanDistancesAnyGS
+from algorithms import *
 import pygame
 import random
 from time import sleep

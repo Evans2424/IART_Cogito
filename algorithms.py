@@ -26,21 +26,6 @@ class TreeNode:
                 nodes.append(TreeNode(newState, self, button, distance=self.distance+1))
         return nodes
     
-    def printPath(self):
-        file = open("path.txt", "w")
-        path = []
-        node = self
-        while node:
-            path.append(node)
-            node = node.parentNode
-        path.reverse()
-        file.write(f'{path[0].state}\n')
-        for node in path[1:]:
-            print(node.parentButton)
-            file.write(f'{node.parentButton}\n')
-            file.write(f'{node.state}\n')
-        file.close()
-
     def getButtonSequence(self):
         if self.parentNode == None:
             return []
