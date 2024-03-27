@@ -1,5 +1,5 @@
 # Set up some constants
-WIDTH, HEIGHT = 640, 480
+WIDTH, HEIGHT = 750, 480
 MARGIN = 20
 FPS = 40
 
