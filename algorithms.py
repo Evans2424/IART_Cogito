@@ -38,11 +38,11 @@ class TreeNode:
 Heuristic Evaluation Functions - Minimization!
 """
 def correctPieces(state):
-    """ Return the number of pieces that are NOT in the correct position """
+    """ This heuristic considers the number of pieces correctly positioned """
     return state.numberOfPieces() - state.piecesCorrectlyPositioned()
 
 def manhattanDistancesFreeGS(state):
-    """ Sum of Manhattan Distances to the closest free goal position"""
+    """ This heuristic considers the sum of Manhattan Distances to the closest free goal position """
     currentMatrix = state.board.matrix
     goalMatrix = state.getGoalMatrix()
     dist = 0
@@ -55,7 +55,7 @@ def manhattanDistancesFreeGS(state):
     return dist
 
 def manhattanDistancesAnyGS(state):
-    """ Sum of Manhattan Distances to the closest goal position"""
+    """ This heuristic considers the sum of Manhattan Distances to the closest (any) goal position """
     currentMatrix = state.board.matrix
     goalMatrix = state.getGoalMatrix()
     dist = 0

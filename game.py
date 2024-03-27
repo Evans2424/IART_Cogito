@@ -219,6 +219,7 @@ class Game:
 
         # Create a font object
         font = pygame.font.Font(None, 36)
+        fontDescription = pygame.font.Font(None, 20)
 
         # Render the level and score
         levelText = font.render(f"Level: {self.state.level + 1}", True, (255, 255, 255))
@@ -227,6 +228,7 @@ class Game:
         depthText = font.render(f"Max Depth: {self.maxDepth}", True, (255, 255, 255))
         heuristicText = font.render(f"Heuristic: {self.heuristicIndex+1}", True, (255, 255, 255))
         heuristicWeightText = font.render(f"Weight: {self.heuristicWeight}", True, (255, 255, 255))
+        heuristicDescription = fontDescription.render(f"{self.heuristics[self.heuristicIndex].__doc__}", True, (255, 255, 255))
         thinkingText = font.render("Thinking...", True, (255, 255, 255))
 
         # Draw the level and score on the right side of the board
@@ -240,7 +242,14 @@ class Game:
         if self.selectedAlgorithm == 4:
             self.screen.blit(heuristicWeightText, (2*MARGIN + 10*cellSize + 10, MARGIN + 200))
 
-        
+        if self.selectedAlgorithm >= 2:
+            words = self.heuristics[self.heuristicIndex].__doc__.split()
+            lines = [words[i:i+5] for i in range(0, len(words), 5)]
+            for i, line in enumerate(lines):
+                line = " ".join(line)
+                text = fontDescription.render(line, True, (255, 255, 255))
+                self.screen.blit(text, (2*MARGIN + 10*cellSize + 10, MARGIN + 240 + i*20))
+
         if self.thinking:
             self.screen.blit(thinkingText, (2*MARGIN + 10*cellSize + 10, HEIGHT - 2*MARGIN))
 
