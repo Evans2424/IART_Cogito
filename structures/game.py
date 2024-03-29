@@ -176,8 +176,9 @@ class Game:
                             return False, False
         return False, False
 
-    def callAlgorithm(self):
-        print("AI is thinking...")
+    def callAlgorithm(self, testing=False):
+        if not testing:
+            print("AI is thinking...")
         self.thinking = True
         self.draw()
         pygame.display.flip()
@@ -203,16 +204,18 @@ class Game:
         end_time = time.time()  # Record the end time
         self.thinking = False
         self.elapsed_time = end_time - start_time
-        print(f"It took the AI {self.elapsed_time:.2f} seconds to find the best move(s)!\n")
+        if not testing:
+            print(f"It took the AI {self.elapsed_time:.2f} seconds to find the best move(s)!\n")
         return goalNode
 
-    def resolveLevel(self):
-        goalNode = self.callAlgorithm()
+    def resolveLevel(self, testing=False):
+        goalNode = self.callAlgorithm(testing)
         
         if goalNode:
             buttonSequence = goalNode.getButtonSequence()
             for button in buttonSequence:
-                print(f"AI clicked me! {button}")
+                if not testing:
+                    print(f"AI clicked me! {button}")
                 self.state = self.state.move(button)
                 button.highlight = True
                 self.draw()
@@ -221,7 +224,7 @@ class Game:
       
 
     def giveHint(self):
-        goalNode = self.callAlgorithm()
+        goalNode = self.callAlgorithm(False)
 
         if goalNode:
             buttonSequence = goalNode.getButtonSequence()
