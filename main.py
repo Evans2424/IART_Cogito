@@ -47,10 +47,11 @@ while running:
     pygame.display.flip()
 
     # Update the game
-    won = game.update()
-    if won:
+    finish, won = game.update()
+    if finish:
         # End the game
-        print("You won the game!")
+        if won:
+            print("You won the game!")
         running = False
 
     # Cap the frame rate
