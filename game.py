@@ -8,6 +8,7 @@ import pygame
 import random
 import time
 from time import sleep
+import sys
 
 
 class GameState:
@@ -95,7 +96,7 @@ class GameState:
     @staticmethod
     def initializeRandomState(level, buttons):
         goalState = GameState(Board(goal_states.getGoalMatrix(level)), level, 0)
-        randMoves = random.randint(15, 20)
+        randMoves = random.randint(5, 8)
         for _ in range(randMoves):
             button = random.choice(buttons)
             while not button.isValid(level):
@@ -158,11 +159,17 @@ class Game:
 
             font = pygame.font.Font(None, 20)
             text = font.render("Goal state reached! Press Enter to continue!", True, (255, 0, 0))
-            self.screen.blit(text, (2*MARGIN + 10*cellSize + 10, MARGIN + 300))
+            self.screen.blit(text, (2*MARGIN + 10*cellSize + 10, MARGIN + 320))
+
+            text = font.render("Press R to restart the level", True, (255, 0, 0))
+            self.screen.blit(text, (2*MARGIN + 10*cellSize + 10, MARGIN + 340))
+
+            text = font.render("Press ESC to leave the game", True, (255, 0, 0))
+            self.screen.blit(text, (2*MARGIN + 10*cellSize + 10, MARGIN + 360))
 
             font = pygame.font.Font(None, 20)
             time_text = font.render(f"Elapsed time: {self.elapsed_time:.2f} seconds", True, (255, 255, 255))
-            self.screen.blit(time_text, (2*MARGIN + 10*cellSize + 10, MARGIN + 340))
+            self.screen.blit(time_text, (2*MARGIN + 10*cellSize + 10, MARGIN + 390))
 
             pygame.display.flip()
 
@@ -174,7 +181,12 @@ class Game:
                                 return True
                             self.state = GameState.initializeRandomState(self.state.level + 1, self.buttons)
                             return False
-    
+                        elif event.key == pygame.K_ESCAPE:
+                            pygame.quit()  
+                            sys.exit(0)
+                        elif event.key == pygame.K_r:  # Check if the 'R' key was pressed
+                            self.state = GameState.initializeRandomState(self.state.level, self.buttons)  # Restart the current level
+
     def callAlgorithm(self):
         print("AI is thinking...")
         self.thinking = True

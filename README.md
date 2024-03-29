@@ -27,3 +27,14 @@ You can move the balls by clicking on the circles around the board. The effect o
 
 We have information about the current level, the number of moves made (score), and the current AI algorithm selected. The player can change the AI algorithm by using the "Left" and "Right" arrow keys.
 
+When the AI finds a solution, it will press the buttons accordingly, and in the end show the elapsed time to find the solution. The player can then go to the next level, restart the level to try another algorithm, or quit the game. 
+
+### Controls List
+- **Arrow Keys**: Change the AI algorithm.
+- **Mouse Clicks** : Move the balls.
+- **S** : Solve the level using the selected AI algorithm.
+- **H** : Change the heuristic function (only for informed algorithms).
+- **P** : Increase the Weight in Weighted A*.
+
+
+
