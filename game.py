@@ -6,6 +6,7 @@ import operators
 from algorithms import *
 import pygame
 import random
+import time
 from time import sleep
 
 
@@ -27,6 +28,7 @@ class GameState:
         self.board = board
         self.level = level
         self.score = score
+        self.elapsed_time = 0
 
     def __str__(self):
         return f"Level={self.level}, Score={self.score}, \nBoard=\n{self.board}"
@@ -152,18 +154,34 @@ class Game:
 
     def update(self):
         if self.state.isGoalState():
-            print("Goal state reached!")
-            sleep(1)
-            if self.state.level == (len(operators.operations) * len(goal_states.goalMatrices) - 1):
-                return True
-            
-            self.state = GameState.initializeRandomState(self.state.level + 1, self.buttons)
-        return False
+            print("Goal state reached! Press Enter to continue.")
+
+            font = pygame.font.Font(None, 20)
+            text = font.render("Goal state reached! Press Enter to continue!", True, (255, 0, 0))
+            self.screen.blit(text, (2*MARGIN + 10*cellSize + 10, MARGIN + 300))
+
+            font = pygame.font.Font(None, 20)
+            time_text = font.render(f"Elapsed time: {self.elapsed_time:.2f} seconds", True, (255, 255, 255))
+            self.screen.blit(time_text, (2*MARGIN + 10*cellSize + 10, MARGIN + 340))
+
+            pygame.display.flip()
+
+            while True:
+                for event in pygame.event.get():
+                    if event.type == pygame.KEYDOWN:
+                        if event.key == pygame.K_RETURN:
+                            if self.state.level == (len(operators.operations) * len(goal_states.goalMatrices) - 1):
+                                return True
+                            self.state = GameState.initializeRandomState(self.state.level + 1, self.buttons)
+                            return False
     
     def callAlgorithm(self):
         self.thinking = True
         self.draw()
         pygame.display.flip()
+
+        
+        start_time = time.time()  # Record the start time
 
         algorithm = self.algorithms[self.selectedAlgorithm]
         match algorithm.__name__:
@@ -179,12 +197,15 @@ class Game:
                 goalNode = algorithm(TreeNode(self.state), self.buttons, self.heuristics[self.heuristicIndex], self.heuristicWeight)
             case _:
                 raise ValueError("Algorithm not implemented")
-        
+            
+        end_time = time.time()  # Record the end time
         self.thinking = False
-        return goalNode
+        return goalNode, end_time - start_time
 
     def resolveLevel(self):
-        goalNode = self.callAlgorithm()
+        goalNode, self.elapsed_time = self.callAlgorithm()
+        print(self.elapsed_time)
+        
         
         if goalNode:
             buttonSequence = goalNode.getButtonSequence()
@@ -195,7 +216,7 @@ class Game:
                 self.draw()
                 pygame.display.flip()
                 sleep(1)
-
+      
 
     def giveHint(self):
         goalNode = self.callAlgorithm()
