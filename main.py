@@ -1,5 +1,5 @@
-from game import Game, GameState
-from constants import WIDTH, HEIGHT, FPS
+from structures.game import Game, GameState
+from data.constants import WIDTH, HEIGHT, FPS
 import pygame
 
 # Initialize Pygame

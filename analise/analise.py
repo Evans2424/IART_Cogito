@@ -5,7 +5,7 @@ import openpyxl
 import pandas as pd
 from matplotlib import pyplot as plt
 
-from levels_analise import STATES
+from analise.test_states import STATES
 
 goal_state = [[0, 0, 0, 0, 0, 0, 0, 0, 0],   
     [0, 0, 0, 0, 0, 0, 0, 0, 0],

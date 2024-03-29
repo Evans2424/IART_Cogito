@@ -1,9 +1,9 @@
-from board import Board
-from button import Button
-from constants import MARGIN, cellSize, HEIGHT
-import goal_states
-import operators
-from algorithms import *
+from structures.board import Board
+from structures.button import Button
+from data.constants import MARGIN, cellSize, HEIGHT
+import data.goal_states as goal_states
+import data.operators as operators
+from structures.algorithms import *
 import pygame
 import random
 import time

@@ -1,5 +1,5 @@
 import pygame
-from constants import MARGIN, cellSize
+from data.constants import MARGIN, cellSize
 
 class Board:
     def __init__(self, matrix):
