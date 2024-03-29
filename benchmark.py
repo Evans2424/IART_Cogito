@@ -3,6 +3,7 @@ from structures.board import Board
 from data.test_states import STATES
 from data.constants import WIDTH, HEIGHT, FPS
 from math import inf
+from numpy import arange
 import pygame
 
 def testGame(game : Game, best_time, best_moves):
@@ -66,7 +67,7 @@ if __name__ == "__main__":
 
 
         #informed search
-        for algorithm in range(2, 5):
+        for algorithm in range(2, 4):
             for heuristic in range (len(game.heuristics)):
                 if (algorithm, heuristic) in [(2,1)]:
                     continue
@@ -74,6 +75,15 @@ if __name__ == "__main__":
                 game.selectedAlgorithm = algorithm
                 
                 game.heuristicIndex = heuristic
+
+                best_time, best_moves = testGame(game, best_time, best_moves)
+
+        for heuristic in range (len(game.heuristics)):
+            for weight in arange(1.2,2.2, 0.2):
+                game.state = GameState(Board(test_state), 0, 0)
+                game.selectedAlgorithm = 4
+                game.heuristicIndex = heuristic
+                game.heuristicWeight = round(weight,1)
 
                 best_time, best_moves = testGame(game, best_time, best_moves)
 
