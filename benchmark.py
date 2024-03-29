@@ -67,10 +67,12 @@ if __name__ == "__main__":
 
         #informed search
         for algorithm in range(2, 5):
-            game.state = GameState(Board(test_state), 0, 0)
-            game.selectedAlgorithm = algorithm
-                
             for heuristic in range (len(game.heuristics)):
+                if (algorithm, heuristic) in [(2,1)]:
+                    continue
+                game.state = GameState(Board(test_state), 0, 0)
+                game.selectedAlgorithm = algorithm
+                
                 game.heuristicIndex = heuristic
 
                 best_time, best_moves = testGame(game, best_time, best_moves)
