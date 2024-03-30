@@ -78,8 +78,9 @@ if __name__ == "__main__":
 
                 best_time, best_moves = testGame(game, best_time, best_moves)
 
-        for heuristic in range (len(game.heuristics)):
-            for weight in arange(1.2,2.2, 0.2):
+        # for heuristic in range (len(game.heuristics)): # the correct loop
+        for heuristic in range (len(game.heuristics)-1, len(game.heuristics)): #to test the new heuristic 
+            for weight in arange(1.2, 2.2, 0.2):
                 game.state = GameState(Board(test_state), 0, 0)
                 game.selectedAlgorithm = 4
                 game.heuristicIndex = heuristic

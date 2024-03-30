@@ -121,7 +121,7 @@ class Game:
         self.algorithms = [bfs, ids, gs, a_star, wa_star]
         self.selectedAlgorithm = 0
         
-        self.heuristics = [correctPieces, manhattanDistancesFreeGS, manhattanDistancesAnyGS]
+        self.heuristics = [correctPieces, manhattanDistancesFreeGS, manhattanDistancesAnyGS, mixed]
         self.heuristicIndex = 0
         
         self.maxDepth = 5
