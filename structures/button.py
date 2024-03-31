@@ -1,6 +1,6 @@
 import pygame
-import operators
-from constants import MARGIN, cellSize
+import data.operators as operators
+from data.constants import MARGIN, cellSize
 
 class Button:
     """

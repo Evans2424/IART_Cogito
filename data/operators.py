@@ -1,5 +1,3 @@
-# TODO: define operations for each level. They are currently all the same
-# delta represents the type of move
 operations = [
     {                       # Level 1
         "ownDir": 1,

@@ -67,16 +67,9 @@ def manhattanDistancesAnyGS(state):
         
     return dist
 
-"""
-def mixedHeuristic(state):
-    return 10 * (correctPieces(state)/state.numberOfPieces() + manhattanDistances(state)/(state.numberOfPieces() * state.getMaxManhattanDistance()))
-
-def moreCorrectPieces(state):
-    return 10 * (3 * correctPieces(state)/state.numberOfPieces() + manhattanDistances(state)/(state.numberOfPieces() * state.getMaxManhattanDistance()))
-
-def moreManhattanDistances(state):
-    return 10 * (correctPieces(state)/state.numberOfPieces() + 3 * manhattanDistances(state)/(state.numberOfPieces() * state.getMaxManhattanDistance()))
-"""
+def mixed(state):
+    """ This heuristic considers the number of pieces correctly positioned and the sum of Manhattan Distances to the closest (any) goal position """
+    return 3 * correctPieces(state) + manhattanDistancesAnyGS(state)
 
 """
 Search Algorithms

@@ -1,11 +1,12 @@
-from board import Board
-from button import Button
-from constants import MARGIN, cellSize, HEIGHT
-import goal_states
-import operators
-from algorithms import *
+from structures.board import Board
+from structures.button import Button
+from data.constants import MARGIN, cellSize, HEIGHT
+import data.goal_states as goal_states
+import data.operators as operators
+from structures.algorithms import *
 import pygame
 import random
+import time
 from time import sleep
 
 
@@ -115,11 +116,12 @@ class Game:
         self.screen = screen
         self.buttons = [Button(i,j) for j in range(9) for i in range(4)]
         self.state = GameState.initializeRandomState(0, self.buttons)
+        self.elapsed_time = 0
         
         self.algorithms = [bfs, ids, gs, a_star, wa_star]
         self.selectedAlgorithm = 0
         
-        self.heuristics = [correctPieces, manhattanDistancesFreeGS, manhattanDistancesAnyGS]
+        self.heuristics = [correctPieces, manhattanDistancesFreeGS, manhattanDistancesAnyGS, mixed]
         self.heuristicIndex = 0
         
         self.maxDepth = 5
@@ -152,19 +154,37 @@ class Game:
 
     def update(self):
         if self.state.isGoalState():
-            print("Goal state reached!")
-            sleep(1)
-            if self.state.level == (len(operators.operations) * len(goal_states.goalMatrices) - 1):
-                return True
-            
-            self.state = GameState.initializeRandomState(self.state.level + 1, self.buttons)
-        return False
-    
-    def callAlgorithm(self):
-        print("AI is thinking...")
+            print("Goal state reached! Press Enter to continue.")
+
+            self.draw()
+            pygame.display.flip()
+
+            while True:
+                for event in pygame.event.get():
+                    if event.type == pygame.KEYDOWN:
+                        if event.key == pygame.K_RETURN:
+                            if self.state.level == (len(operators.operations) * len(goal_states.goalMatrices) - 1):
+                                return True, True
+                            self.state = GameState.initializeRandomState(self.state.level + 1, self.buttons)
+                            self.elapsed_time = 0
+                            return False, False
+                        elif event.key == pygame.K_ESCAPE:
+                            return True, False
+                        elif event.key == pygame.K_r:  # Check if the 'R' key was pressed
+                            self.state = GameState.initializeRandomState(self.state.level, self.buttons)  # Restart the current level
+                            self.elapsed_time = 0
+                            return False, False
+        return False, False
+
+    def callAlgorithm(self, testing=False):
+        if not testing:
+            print("AI is thinking...")
         self.thinking = True
         self.draw()
         pygame.display.flip()
+
+        
+        start_time = time.time()  # Record the start time
 
         algorithm = self.algorithms[self.selectedAlgorithm]
         match algorithm.__name__:
@@ -180,26 +200,31 @@ class Game:
                 goalNode = algorithm(TreeNode(self.state), self.buttons, self.heuristics[self.heuristicIndex], self.heuristicWeight)
             case _:
                 raise ValueError("Algorithm not implemented")
-        
+            
+        end_time = time.time()  # Record the end time
         self.thinking = False
+        self.elapsed_time = end_time - start_time
+        if not testing:
+            print(f"It took the AI {self.elapsed_time:.2f} seconds to find the best move(s)!\n")
         return goalNode
 
-    def resolveLevel(self):
-        goalNode = self.callAlgorithm()
+    def resolveLevel(self, testing=False):
+        goalNode = self.callAlgorithm(testing)
         
         if goalNode:
             buttonSequence = goalNode.getButtonSequence()
             for button in buttonSequence:
-                print(f"AI clicked me! {button}")
+                if not testing:
+                    print(f"AI clicked me! {button}")
                 self.state = self.state.move(button)
                 button.highlight = True
                 self.draw()
                 pygame.display.flip()
                 sleep(1)
-
+      
 
     def giveHint(self):
-        goalNode = self.callAlgorithm()
+        goalNode = self.callAlgorithm(False)
 
         if goalNode:
             buttonSequence = goalNode.getButtonSequence()
@@ -221,19 +246,29 @@ class Game:
         # Create a font object
         font = pygame.font.Font(None, 36)
         fontDescription = pygame.font.Font(None, 22)
+        smallerFont = pygame.font.Font(None, 20)
 
         # Render the level and score
         levelText = font.render(f"Level: {self.state.level + 1}", True, (255, 255, 255))
         scoreText = font.render(f"Score: {self.state.score}", True, (255, 255, 255))
+        
         algorithmText = font.render(f"Algorithm: {self.algorithms[self.selectedAlgorithm].__name__.upper()}", True, (255, 255, 255))
         depthText = font.render(f"Max Depth: {self.maxDepth}", True, (255, 255, 255))
         heuristicText = font.render(f"Heuristic: {self.heuristicIndex+1}", True, (255, 255, 255))
         heuristicWeightText = font.render(f"Weight: {self.heuristicWeight}", True, (255, 255, 255))
+        
+        enterText = smallerFont.render("Goal state reached! Press Enter to continue!", True, (0, 0, 0))
+        restartText = smallerFont.render("Press R to restart the level", True, (0, 0, 0))
+        escText = smallerFont.render("Press ESC to leave the game", True, (0, 0, 0))
+        time_text = smallerFont.render(f"Elapsed time: {self.elapsed_time:.2f} seconds", True, (255, 255, 255))
+        
         thinkingText = font.render("Thinking...", True, (255, 255, 255))
 
         # Draw the level and score on the right side of the board
         self.screen.blit(levelText, (2*MARGIN + 10*cellSize + 10, MARGIN))
         self.screen.blit(scoreText, (2*MARGIN + 10*cellSize + 10, MARGIN + 40))
+
+        #Algorithm information
         self.screen.blit(algorithmText, (2*MARGIN + 10*cellSize + 10, MARGIN + 120))
         if self.selectedAlgorithm == 1:
             self.screen.blit(depthText, (2*MARGIN + 10*cellSize + 10, MARGIN + 160))
@@ -250,6 +285,15 @@ class Game:
                 text = fontDescription.render(line, True, (0, 0, 0))
                 self.screen.blit(text, (2*MARGIN + 10*cellSize + 10, MARGIN + 240 + i*20))
 
+        # Draw the goal state message
+        if self.state.isGoalState():
+            self.screen.blit(enterText, (2*MARGIN + 10*cellSize + 10, MARGIN + 320))
+            self.screen.blit(restartText, (2*MARGIN + 10*cellSize + 10, MARGIN + 340))
+            self.screen.blit(escText, (2*MARGIN + 10*cellSize + 10, MARGIN + 360))
+            if self.elapsed_time > 0:
+                self.screen.blit(time_text, (2*MARGIN + 10*cellSize + 10, MARGIN + 390))
+
+        # Draw the thinking message
         if self.thinking:
             self.screen.blit(thinkingText, (2*MARGIN + 10*cellSize + 10, HEIGHT - 2*MARGIN))
 

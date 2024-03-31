@@ -122,24 +122,5 @@ goalMatrices = [
     [0, 0, 0, 0, 0, 0, 0, 0, 0]]
 ]
 
-
-maxManhattanDistance = [ # Number of pieces * Max Distance
-    6,  # 1
-    4,  # 2
-    6,  # 3
-    6,  # 4
-    6,  # 5
-    6,  # 6
-    6,  # 7
-    6,  # 8
-    6,  # 9
-    6,  # 10
-    6,  # 11
-    6   # 12
-]
-
 def getGoalMatrix(level):
     return goalMatrices[level//12]
-
-def getMaxManhattanDistance(level):
-    return maxManhattanDistance[level//12]
