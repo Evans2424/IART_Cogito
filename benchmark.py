@@ -57,6 +57,7 @@ if __name__ == "__main__":
         best_moves = ("", -1, inf)
         
         if test_num < uninformed_limit:
+            """
             #uninformed search
             for algorithm in range(2):
                 game.state = GameState(Board(test_state), 0, 0)
@@ -64,11 +65,13 @@ if __name__ == "__main__":
                 game.maxDepth = 10
 
                 best_time, best_moves = testGame(game, best_time, best_moves)
+            """
 
 
         #informed search
         for algorithm in range(2, 4):
-            for heuristic in range (len(game.heuristics)):
+            # for heuristic in range (len(game.heuristics)): # the correct loop
+            for heuristic in range (len(game.heuristics)-1, len(game.heuristics)): #to test the new heuristic 
                 if (algorithm, heuristic) in [(2,1)]:
                     continue
                 game.state = GameState(Board(test_state), 0, 0)
